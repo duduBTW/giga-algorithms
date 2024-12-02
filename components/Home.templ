@@ -1,0 +1,63 @@
+package components
+
+import "github.com/dudubtw/giga-algorithms/algorithms"
+
+templ Home() {
+	<div class="container mx-auto px-4 py-5">
+		@Categories()
+		@Algorithms()
+	</div>
+}
+
+templ Categories() {
+	<div>
+		@Title("Categories")
+		@CategoryList()
+	</div>
+}
+
+templ CategoryList() {
+	<div class="flex gap-3 py-4">
+		for _, category := range algorithms.Categories {
+			@CategoryItem(category)
+		}
+	</div>
+}
+
+templ CategoryItem(category algorithms.Category) {
+	<div class="p-4 border border-divider rounded-lg flex-1">
+		<a class="text-base font-bold hover:underline">{ category.Name }</a>
+		<p class="text-secondary text-sm pt-1">{ category.Description }</p>
+	</div>
+}
+
+templ Algorithms() {
+	<div>
+		@Title("Algorithms")
+		@AlgorithmList()
+	</div>
+}
+
+templ AlgorithmList() {
+	<div class="flex flex-col">
+		for _, algorithm := range algorithms.Algorithms {
+			@AlgorithmItem(algorithm)
+		}
+	</div>
+}
+
+templ AlgorithmItem(algorithm algorithms.Algorithm) {
+	<div class="py-4 flex gap-4">
+		<div>
+			<img src="https://pbs.twimg.com/media/GddOWeTXQAAjns-?format=jpg&name=4096x4096" alt="" class="size-12 rounded-lg"/>
+		</div>
+		<div>
+			<p class="text-secondary text-sm pb-1">{ algorithm.Category.Name }</p>
+			<a class="text-base font-bold hover:underline">{ algorithm.Name }</a>
+		</div>
+	</div>
+}
+
+templ Title(title string) {
+	<h2 class="text-[22px] leading-[28px] font-bold pt-5 pb-3">{ title }</h2>
+}
