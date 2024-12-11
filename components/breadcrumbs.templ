@@ -1,0 +1,28 @@
+package components
+
+type BreadcrumbsProps struct {
+	Items []BreadcrumbItem
+}
+
+type BreadcrumbItem struct {
+	Label string
+	Link  string
+}
+
+func breadcrumbItemClass(isLastItem bool) string {
+	if isLastItem {
+		return "text-primary"
+	}
+	return "text-secondary"
+}
+
+templ Breadcrumbs(props BreadcrumbsProps) {
+	<div class="flex gap-2 text-sm">
+		for index, item := range props.Items {
+			<a href={ templ.URL(item.Link) } class={ breadcrumbItemClass(len(props.Items)-1 == index) }>{ item.Label }</a>
+			if !(len(props.Items) - 1 == index) {
+				<span class="text-secondary px-1.5">/</span>
+			}
+		}
+	</div>
+}

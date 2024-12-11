@@ -1,0 +1,182 @@
+package components
+
+import (
+	"github.com/dudubtw/giga-algorithms/constants"
+	"strconv"
+)
+
+type Advent2024Day1Part2Props struct {
+	Data [][]int
+}
+
+templ Advent2024Day1Part2(props Advent2024Day1Part2Props) {
+	<div class="container mx-auto px-4 py-5">
+		<div class="py-2">
+			@Breadcrumbs(BreadcrumbsProps{
+				Items: []BreadcrumbItem{
+					{Label: "Home", Link: "/"},
+					{Label: "Advent of Code 2024", Link: "/advent-2024"},
+					{Label: "Day 1 - Part 2", Link: "/advent-2024/day-1"},
+				},
+			})
+		</div>
+		@Title("Advent of Code 2024 - Day 1 - Part 2")
+		<a href="/advent-2024/day-1" class="text-blue-500 underline">{ "<< Part 1" }</a>
+		@Dat1Pt2Description()
+		<div class="flex gap-4 items-start">
+			@Day2List(props.Data[0])
+			@Day1Pt2Controls()
+		</div>
+	</div>
+	@templ.JSONScript(constants.Advent2024Day1Part2LookupTableDataID, GenerateJsonData(props.Data))
+	<script>
+		function start() {
+			AdventOfCodeDay1Part2Handler()
+		}
+	</script>
+}
+
+templ Dat1Pt2Description() {
+	<div class="pt-1 pb-4 max-w-prose flex flex-col gap-3 text-secondary">
+		<p>Your analysis only confirmed what everyone feared: the two lists of location IDs are indeed very different.</p>
+		<p>Or are they?</p>
+		<p>The Historians can't agree on which group made the mistakes or how to read most of the Chief's handwriting, but in the commotion you notice an interesting detail: a lot of location IDs appear in both lists! Maybe the other numbers aren't location IDs at all but rather misinterpreted handwriting.</p>
+		<p>This time, you'll need to figure out exactly how often each number from the left list appears in the right list. Calculate a total similarity score by adding up each number in the left list after multiplying it by the number of times that number appears in the right list.</p>
+		<p>Here are the same example lists again:</p>
+		<table class="border-collapse border border-divider max-w-xs">
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>4</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>4</td>
+				<td>3</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>2</td>
+				<td>5</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>1</td>
+				<td>3</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>9</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>3</td>
+			</tr>
+		</table>
+		<p>For these example lists, here is the process of finding the similarity score:</p>
+		<ul class="list-disc list-inside">
+			<li>
+				The first number in the left list is 3. It appears in the right list three times, so the similarity score increases by 3 * 3 = 9.
+			</li>
+			<li>
+				The second number in the left list is 4. It appears in the right list once, so the similarity score increases by 4 * 1 = 4.
+			</li>
+			<li>
+				The third number in the left list is 2. It does not appear in the right list, so the similarity score does not increase (2 * 0 = 0).
+			</li>
+			<li>
+				The fourth number, 1, also does not appear in the right list.
+			</li>
+			<li>
+				The fifth number, 3, appears in the right list three times; the similarity score increases by 9.
+			</li>
+			<li>
+				The last number, 3, appears in the right list three times; the similarity score again increases by 9.
+			</li>
+		</ul>
+		<p>So, for these example lists, the similarity score at the end of this process is 31 <span class="bg-gray-100 rounded">(9 + 4 + 0 + 0 + 9 + 9)</span>.</p>
+		<p>Your actual left and right lists contain many location IDs. What is the total similarity score between your lists?</p>
+	</div>
+}
+
+templ Day2List(items []int) {
+	{{ left := items }}
+	<div id={ constants.Advent2024Day1Part2ListID } class="flex-1">
+		<div class="sticky top-0 flex gap-4 justify-between text-secondary text-sm border-b border-divider bg-white z-10">
+			<div class="flex-1">Items</div>
+			<div class="flex-1 text-center">Multiplication</div>
+		</div>
+		<div class="relative">
+			for index, _ := range left {
+				<div class="flex gap-4 justify-between border-b border-divider">
+					<div class="flex-1">{ strconv.Itoa(left[index]) }</div>
+					<div class="flex-1 text-center">0</div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ Day1Pt2Controls() {
+	<div class="sticky top-4 w-64 flex flex-col gap-3">
+		@Day1Pt2Total(0)
+		@Day2LookupTable(make(map[int]int))
+	</div>
+}
+
+templ Day1Pt2Total(total int) {
+	<div id={ constants.Advent2024Day1Part2TotalContainerID } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+		<div class="flex flex-col">
+			<h3 class="font-bold text-sm text-secondary">Total</h3>
+			@Day1Pt2TotalValue(total)
+		</div>
+		<div class="flex flex-col gap-1">
+			@Button(ButtonProps{
+				Variant: "primary",
+				Size:    "default",
+				Label:   "Calculate all",
+				Type:    "submit",
+				Id:      constants.Advent2024Day1Part2CalculateAllID,
+			})
+			@Button(ButtonProps{
+				Variant: "ghost",
+				Size:    "default",
+				Label:   "Next",
+				Type:    "submit",
+				Id:      constants.Advent2024Day1Part2NextID,
+			})
+		</div>
+	</div>
+}
+
+templ Day1Pt2TotalValue(total int) {
+	<p id={ constants.Advent2024Day1Part2TotalID } class="text-lg">{ strconv.Itoa(total) }</p>
+}
+
+func Day2LookupTableClass(size int) string {
+	if size < 0 {
+		return ""
+	}
+
+	return "flex-1"
+}
+
+templ Day2LookupTable(items map[int]int) {
+	{{ size := len(items) }}
+	<div id={ constants.Advent2024Day1Part2LookupTableID } class="p-4 rounded-lg border border-divider flex flex-col gap-3 h-full max-h-60 overflow-y-auto">
+		if size > 0 {
+			<div class="sticky -top-4 flex gap-4 justify-between text-secondary text-sm border-b border-divider bg-white z-10">
+				<div class="flex-1">Items</div>
+				<div class="flex-1 text-center">Ocurrances</div>
+			</div>
+			for key, value := range items {
+				<div class="flex gap-4 justify-between border-b border-divider">
+					<div class="flex-1">{ strconv.Itoa(key) }</div>
+					<div class="flex-1 text-center">{ strconv.Itoa(value) }</div>
+				</div>
+			}
+		} else {
+			@Button(ButtonProps{
+				Label: "Generate Lookup Table",
+				Id:    constants.Advent2024Day1Part2GenerateLookupTableID,
+				Type:  "button",
+			})
+		}
+	</div>
+}

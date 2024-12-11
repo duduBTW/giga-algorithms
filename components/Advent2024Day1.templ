@@ -1,0 +1,203 @@
+package components
+
+import (
+	"encoding/json"
+	"github.com/dudubtw/giga-algorithms/constants"
+	"strconv"
+)
+
+type Advent2024Day1Props struct {
+	Data [][]int
+}
+
+func GenerateJsonData(data [][]int) string {
+	jsonBytes, err := json.Marshal(data)
+	if err != nil {
+		return ""
+	}
+	return string(jsonBytes)
+}
+
+templ Advent2024Day1(props Advent2024Day1Props) {
+	<div class="container mx-auto px-4 py-5">
+		<div class="py-2">
+			@Breadcrumbs(BreadcrumbsProps{
+				Items: []BreadcrumbItem{
+					{Label: "Home", Link: "/"},
+					{Label: "Advent of Code 2024", Link: "/advent-2024"},
+					{Label: "Day 1", Link: "/advent-2024/day-1"},
+				},
+			})
+		</div>
+		@Title("Advent of Code 2024 - Day 1")
+		@Description()
+		<div class="flex gap-4 items-start">
+			@Day1List(props.Data)
+			@Controls()
+		</div>
+	</div>
+	@templ.JSONScript(constants.Advent2024Day1DataID, GenerateJsonData(props.Data))
+	<script>
+		function start() {
+			AdventOfCodeDay1Handler()
+		}
+	</script>
+}
+
+templ Description() {
+	<div class="pt-1 pb-4 max-w-prose flex flex-col gap-3 text-secondary">
+		<p>You haven't even left yet and the group of Elvish Senior Historians has already hit a problem: their list of locations to check is currently empty. Eventually, someone decides that the best place to check first would be the Chief Historian's office.</p>
+		<p>Upon pouring into the office, everyone confirms that the Chief Historian is indeed nowhere to be found. Instead, the Elves discover an assortment of notes and lists of historically significant locations! This seems to be the planning the Chief Historian was doing before he left.</p>
+		<p>Throughout the Chief's office, the historically significant locations are listed not by name but by a unique number called the location ID. To make sure they don't miss anything, The Historians split into two groups, each searching the office and trying to create their own complete list of location IDs.</p>
+		<p>There's just one problem: by holding the two lists up side by side (your puzzle input), it quickly becomes clear that the lists aren't very similar. Maybe you can help The Historians reconcile their lists?</p>
+		<p>For example:</p>
+		<table class="border-collapse border border-divider max-w-xs">
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>4</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>4</td>
+				<td>3</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>2</td>
+				<td>5</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>1</td>
+				<td>3</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>9</td>
+			</tr>
+			<tr class="border-b border-divider p-2">
+				<td>3</td>
+				<td>3</td>
+			</tr>
+		</table>
+		<p>Maybe the lists are only off by a small amount! To find out, pair up the numbers and measure how far apart they are. Pair up the smallest number in the left list with the smallest number in the right list, then the second-smallest left number with the second-smallest right number, and so on.</p>
+		<p>Within each pair, figure out how far apart the two numbers are; you'll need to add up all of those distances. For example, if you pair up a 3 from the left list with a 7 from the right list, the distance apart is 4; if you pair up a 9 with a 3, the distance apart is 6.</p>
+		<p>In the example list above, the pairs and distances would be as follows:</p>
+		<ul class="list-disc list-inside">
+			<li>The smallest number in the left list is 1, and the smallest number in the right list is 3. The distance between them is 2.</li>
+			<li>The second-smallest number in the left list is 2, and the second-smallest number in the right list is another 3. The distance between them is 1.</li>
+			<li>The third-smallest number in both lists is 3, so the distance between them is 0.</li>
+			<li>The next numbers to pair up are 3 and 4, a distance of 1.</li>
+			<li>The fifth-smallest numbers in each list are 3 and 5, a distance of 2.</li>
+			<li>Finally, the largest number in the left list is 4, while the largest number in the right list is 9; these are a distance 5 apart.</li>
+		</ul>
+		<p>To find the total distance between the left list and the right list, add up the distances between all of the pairs you found. In the example above, this is 2 + 1 + 0 + 1 + 2 + 5, a total distance of 11!</p>
+		<p>Your actual left and right lists contain many location IDs. What is the total distance between your lists?</p>
+		<a class="text-blue-500 underline" href="/advent-2024/day-1-part-2">Part 2 >></a>
+	</div>
+}
+
+templ Day1List(items [][]int) {
+	{{ left := items[0] }}
+	{{ right := items[1] }}
+	{{ diff := items[2] }}
+	<div id={ constants.Advent2024Day1ListID } class="flex-1">
+		<div class="sticky top-0 flex gap-4 justify-between text-secondary text-sm border-b border-divider bg-white z-10">
+			<div class="flex-1">List 1</div>
+			<div class="flex-1 text-center">Diff</div>
+			<div class="flex-1 text-right">List 2</div>
+		</div>
+		<div class="relative">
+			for index, _ := range left {
+				<div class="flex gap-4 justify-between border-b border-divider">
+					<div class="flex-1">{ strconv.Itoa(left[index]) }</div>
+					<div class="flex-1 text-center">{ strconv.Itoa(diff[index]) }</div>
+					<div class="flex-1 text-right">{ strconv.Itoa(right[index]) }</div>
+				</div>
+			}
+		</div>
+	</div>
+}
+
+templ Controls() {
+	<div class="sticky top-4 w-64 flex flex-col gap-3">
+		@Sorting(false)
+		@Total(0)
+		@Add()
+	</div>
+}
+
+templ Sorting(isSorted bool) {
+	<div id={ constants.Advent2024Day1SortingContainerID } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+		<div class="flex flex-col">
+			<h3 class="font-bold text-sm text-secondary">Is sorted</h3>
+			<p id={ constants.Advent2024Day1IsSortedID } class="text-lg">{ strconv.FormatBool(isSorted) }</p>
+		</div>
+		if !isSorted {
+			<div class="flex flex-col gap-1">
+				@Button(ButtonProps{
+					Variant: "primary",
+					Size:    "default",
+					Label:   "Sort",
+					Type:    "submit",
+					Id:      constants.Advent2024Day1SortID,
+				})
+			</div>
+		}
+	</div>
+}
+
+templ Total(total int) {
+	<div id={ constants.Advent2024Day1TotalContainerID } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+		<div class="flex flex-col">
+			<h3 class="font-bold text-sm text-secondary">Total</h3>
+			@TotalValue(total)
+		</div>
+		<div class="flex flex-col gap-1">
+			@Button(ButtonProps{
+				Variant: "primary",
+				Size:    "default",
+				Label:   "Calculate all",
+				Type:    "submit",
+				Id:      constants.Advent2024Day1CalculateAllID,
+			})
+			@Button(ButtonProps{
+				Variant: "ghost",
+				Size:    "default",
+				Label:   "Next",
+				Type:    "submit",
+				Id:      constants.Advent2024Day1NextID,
+			})
+		</div>
+	</div>
+}
+
+templ TotalValue(total int) {
+	<p id={ constants.Advent2024Day1TotalID } class="text-lg">{ strconv.Itoa(total) }</p>
+}
+
+templ Add() {
+	<div class="p-4 rounded-lg border border-divider flex flex-col gap-2">
+		// <div class="flex gap-2">
+		// 	<label class="flex-1 font-bold text-sm text-secondary">List 1</label>
+		// 	<label class="flex-1 font-bold text-sm text-secondary">List 2</label>
+		// </div>
+		// <div class="flex gap-2">
+		// 	<input class="flex-1 border-box w-0 border border-divider rounded-md px-2.5 py-1.5" placeholder="0"/>
+		// 	<input class="flex-1 border-box w-0 border border-divider rounded-md px-2.5 py-1.5" placeholder="0"/>
+		// </div>
+		<div class="flex flex-col gap-1">
+			// @Button(ButtonProps{
+			// 	Variant: "primary",
+			// 	Size:    "default",
+			// 	Label:   "Add",
+			// 	Type:    "submit",
+			// 	Id:      constants.Advent2024Day1AddID,
+			// })
+			@Button(ButtonProps{
+				Variant: "destructive",
+				Size:    "default",
+				Label:   "Clear All",
+				Type:    "submit",
+				Id:      constants.Advent2024Day1ClearAllID,
+			})
+		</div>
+	</div>
+}

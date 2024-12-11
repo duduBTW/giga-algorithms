@@ -1,0 +1,21 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "$HOME/go/bin/templ generate && go build -o ./tmp/main ./server/server.go"
+bin = "tmp/main"
+include_ext = ["go", "templ"]
+exclude_dir = ["tmp", "vendor", "public"]
+exclude_regex = ["_templ\\.go$"]
+delay = 1000 # ms
+proxy_port = 2000
+app_port = 8080
+
+[screen]
+clear_on_rebuild = true
+
+[build.wasm]
+cmd = "GOOS=js GOARCH=wasm go build -o ./public/lib.wasm ./web/web.go"
+include_ext = ["go"]
+exclude_dir = ["tmp", "vendor", "public", "components"]
+exclude_regex = ["_templ\\.go$"]

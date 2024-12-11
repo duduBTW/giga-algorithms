@@ -31,7 +31,7 @@ func App(body templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<html><head><meta charset=\"utf-8\"><script src=\"/public/wasm_exec.js\"></script><link href=\"/public/output.css\" rel=\"stylesheet\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap\" rel=\"stylesheet\"><script>\n\t\t\t\tconst go = new Go();\n\t\t\t\tWebAssembly.instantiateStreaming(\n\t\t\t\t\tfetch(\"/public/lib.wasm\"),\n\t\t\t\t\tgo.importObject\n\t\t\t\t).then((result) => {\n\t\t\t\t\tgo.run(result.instance);\n\t\t\t\t});\n\t\t\t</script></head><body><div id=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<html><head><meta charset=\"utf-8\"><script src=\"/public/wasm_exec.js\"></script><link href=\"/public/output.css\" rel=\"stylesheet\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&amp;display=swap\" rel=\"stylesheet\"><script>\n\t\t\t\tconst go = new Go();\n\t\t\t\tWebAssembly.instantiateStreaming(\n\t\t\t\t\tfetch(\"/public/lib.wasm\"),\n\t\t\t\t\tgo.importObject\n\t\t\t\t).then(async (result) => {\n\t\t\t\t\tgo.run(result.instance);\n\t\t\t\t});\n\t\t\t</script></head><body><div id=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -52,7 +52,7 @@ func App(body templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><script src=\"https://unpkg.com/lucide@latest\"></script><script>\n\t\t\t\tlucide.createIcons();\n\t\t\t</script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -1,0 +1,47 @@
+package components
+
+import "strings"
+
+type RadioGroupOptionProps struct {
+	Label string
+	Value string
+}
+
+type RadioGroupProps struct {
+	Options        []RadioGroupOptionProps
+	SelectedOption string
+	Id             string
+	Disabled       bool
+}
+
+func RadioGroupClass(props RadioGroupProps) string {
+	baseClasses := "flex flex-col gap-2"
+	classes := []string{baseClasses}
+
+	if props.Disabled {
+		classes = append(classes, "opacity-50")
+	}
+	return strings.Join(classes, " ")
+}
+
+templ RadioGroup(props RadioGroupProps) {
+	<div class={ RadioGroupClass(props) }>
+		for _, option := range props.Options {
+			@RadioGroupOption(option, props.Id, props.SelectedOption)
+		}
+	</div>
+}
+
+templ RadioGroupOption(option RadioGroupOptionProps, id, selected string) {
+	<div class="flex gap-2 items-center" id={ id } data-value={ option.Value }>
+		<div class="relative size-4">
+			<i data-lucide="circle" class="size-4 text-secondary"></i>
+			if option.Value == selected {
+				<div class="absolute size-2 top-1 left-1 bg-indigo-500 rounded-full scale-1 transition-transform"></div>
+			}
+		</div>
+		<span>
+			{ option.Label }
+		</span>
+	</div>
+}

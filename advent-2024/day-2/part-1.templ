@@ -1,0 +1,201 @@
+package advent2024day2
+
+import (
+	"encoding/json"
+	"github.com/dudubtw/giga-algorithms/components"
+	"strconv"
+	"strings"
+)
+
+type Day2Part1Props struct {
+	Reports [][]int
+}
+
+func GenerateJsonDataPt1(props Day2Part1Props) string {
+	jsonBytes, err := json.Marshal(props.Reports)
+	if err != nil {
+		return ""
+	}
+	return string(jsonBytes)
+}
+
+templ Day2Part1Component(props Day2Part1Props) {
+	<div class="container mx-auto px-4 py-5">
+		<div class="py-2">
+			@components.Breadcrumbs(components.BreadcrumbsProps{
+				Items: []components.BreadcrumbItem{
+					{Label: "Home", Link: "/"},
+					{Label: "Advent of Code 2024", Link: "/advent-2024"},
+					{Label: "Day 2", Link: "/advent-2024/day-2-part-1"},
+				},
+			})
+		</div>
+		@components.Title("Day 2: Red-Nosed Reports")
+		<div class="flex gap-4 items-start">
+			@Part1List(Part1ListProps{
+				Reports:     props.Reports,
+				UnsafeIndex: make([]int, len(props.Reports)),
+			})
+			@Part1Right()
+		</div>
+	</div>
+	@templ.JSONScript(IdsData, GenerateJsonDataPt1(props))
+	<script>
+		function start() {
+			AdventOfCodeDay2Part1Handler()
+		}
+	</script>
+}
+
+templ Part1Right() {
+	<div class="sticky top-4 w-64 flex flex-col gap-3">
+		@Part1Total(0)
+		@Part1Sort()
+	</div>
+}
+
+templ Part1Total(total int) {
+	<div id={ IdsPart1TotalContainer } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+		<div class="flex flex-col">
+			<h3 class="font-bold text-sm text-secondary">Safe reports</h3>
+			@Part1TotalValue(total)
+		</div>
+		if total == 0 {
+			<div class="flex flex-col gap-1">
+				@components.Button(components.ButtonProps{
+					Variant: "primary",
+					Size:    "default",
+					Label:   "Calculate all",
+					Type:    "button",
+					Id:      IdsCalculateAll,
+				})
+			</div>
+		}
+	</div>
+}
+
+const (
+	FilterOptionAll    = "all"
+	FilterOptionSafe   = "safe"
+	FilterOptionUnsafe = "unsafe"
+)
+
+func getfilterRadioOptions() components.RadioGroupProps {
+	return components.RadioGroupProps{
+		Options: []components.RadioGroupOptionProps{
+			{Label: "All", Value: FilterOptionAll},
+			{Label: "Safe", Value: FilterOptionSafe},
+			{Label: "Unsafe", Value: FilterOptionUnsafe},
+		},
+		Id: IdsPt1Radio,
+	}
+}
+
+templ Part1Sort() {
+	<div id={ "" } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+		<h3 class="font-bold text-sm text-secondary">Filters</h3>
+		@Part1SortRadio(getfilterRadioOptions())
+	</div>
+}
+
+templ Part1SortRadio(props components.RadioGroupProps) {
+	<div id={ IdsPt1RadioContainer }>
+		@components.RadioGroup(props)
+	</div>
+}
+
+templ Part1TotalValue(total int) {
+	<p id={ IdsPart1TotalValue } class="text-lg">{ strconv.Itoa(total) }</p>
+}
+
+type Part1ListProps struct {
+	Reports     [][]int
+	UnsafeIndex []int
+}
+
+templ Part1List(props Part1ListProps) {
+	<div id={ IdsPt1List } class="flex-1 flex flex-col gap-2">
+		for index, report := range props.Reports {
+			@Part1ListRow(Part1ListRowProps{
+				Report:      report,
+				UnsafeIndex: props.UnsafeIndex[index],
+			})
+		}
+	</div>
+}
+
+type Part1ListRowProps struct {
+	Report      []int
+	UnsafeIndex int
+}
+
+func getPart1ListRowClass(props Part1ListRowProps) string {
+	baseClasses := "py-2 px-4 rounded-lg flex flex-col gap-1"
+
+	var statusClass string
+	switch props.UnsafeIndex {
+	case 0:
+		statusClass = "bg-gray-50"
+	case -1:
+		statusClass = "bg-green-50"
+	default:
+		statusClass = "bg-red-50"
+	}
+
+	classes := []string{baseClasses, statusClass}
+	return strings.Join(classes, " ")
+}
+
+func getPart1ListRowStatusText(props Part1ListRowProps) string {
+	if props.UnsafeIndex == 0 {
+		return "Untracked"
+	}
+
+	if props.UnsafeIndex == -1 {
+		return "Safe"
+	}
+
+	return "Unsafe"
+}
+
+func getPart1ListRowStatusClass(props Part1ListRowProps) string {
+	baseClasses := "text-sm font-medium"
+
+	var statusClasses string
+	switch props.UnsafeIndex {
+	case 0:
+		statusClasses = "text-secondary"
+	case -1:
+		statusClasses = "text-green-500"
+	default:
+		statusClasses = "text-red-500"
+	}
+
+	classes := []string{baseClasses, statusClasses}
+	return strings.Join(classes, " ")
+}
+
+func cellClass(props Part1ListRowProps, index int) string {
+	baseClasses := "size-[48px] flex justify-center items-center rounded-md"
+
+	var unsafeClasses string
+	if props.UnsafeIndex != 0 && index == props.UnsafeIndex {
+		unsafeClasses = "font-bold text-white bg-red-500"
+	} else {
+		unsafeClasses = "bg-white"
+	}
+
+	classes := []string{baseClasses, unsafeClasses}
+	return strings.Join(classes, " ")
+}
+
+templ Part1ListRow(props Part1ListRowProps) {
+	<div class={ getPart1ListRowClass(props) }>
+		<p class={ getPart1ListRowStatusClass(props) }>{ getPart1ListRowStatusText(props) }</p>
+		<div class="flex flex-row gap-2">
+			for index, cell	 := range props.Report {
+				<div class={ cellClass(props, index) }>{ strconv.Itoa(cell) }</div>
+			}
+		</div>
+	</div>
+}

@@ -16,7 +16,7 @@ templ App(body templ.Component) {
 				WebAssembly.instantiateStreaming(
 					fetch("/public/lib.wasm"),
 					go.importObject
-				).then((result) => {
+				).then(async (result) => {
 					go.run(result.instance);
 				});
 			</script>
@@ -25,6 +25,10 @@ templ App(body templ.Component) {
 			<div id={ ROOT_ID }>
 				@body
 			</div>
+			<script src="https://unpkg.com/lucide@latest"></script>
+			<script>
+				lucide.createIcons();
+			</script>
 		</body>
 	</html>
 }

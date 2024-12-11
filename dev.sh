@@ -1,5 +1,15 @@
-$HOME/go/bin/templ generate
-GOOS=js GOARCH=wasm go build -o ./public/lib.wasm ./web/web.go
+#!/bin/bash
 
-tailwindcss -i ./web/global.css -o ./public/output.css
-go run ./server/server.go
+# Trap Ctrl+C and kill all child processes
+trap 'kill $(jobs -p); exit' SIGINT
+
+# Create tmp directory if it doesn't exist
+mkdir -p tmp
+
+# Run these in parallel using & and wait
+($HOME/go/bin/templ generate --watch &)
+(tailwindcss -i ./web/global.css -o ./public/output.css --watch &)
+($HOME/go/bin/air &)
+
+# Wait for all background processes
+wait
