@@ -2,17 +2,67 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 
-	advent2024 "github.com/dudubtw/giga-algorithms/advent-2024"
+	day3 "github.com/dudubtw/giga-algorithms/advent-2024/day-3"
 )
 
 func main() {
-	lines, err := advent2024.ReadDay2Input("day-2-1.txt")
+	content, err := day3.ReadInput("advent-2024/day-3/data-part-1.txt")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// fmt.Println(advent2024.Day2Part1(lines))
-	fmt.Println(advent2024.Day2Part2(lines))
+	resultMath := 0
+	active := true
+
+	day3.ExpressionFinder(content, []day3.Expression{
+		{
+			Name: "mul",
+			OnFound: func(vals []string) {
+				if !active {
+					return
+				}
+
+				if len(vals) != 2 {
+					return
+				}
+				currentMultiplication := 1
+				for _, val := range vals {
+					numericVal, err := strconv.Atoi(val)
+					if err != nil {
+						return
+					}
+
+					currentMultiplication *= numericVal
+				}
+				resultMath += currentMultiplication
+			},
+			ValidateArgChar: func(r rune) bool {
+				_, err := strconv.Atoi(string(r))
+				return err == nil
+			},
+		},
+		{
+			Name: "do",
+			OnFound: func(vals []string) {
+				active = true
+			},
+			ValidateArgChar: func(r rune) bool {
+				return false
+			},
+		},
+		{
+			Name: "don't",
+			OnFound: func(vals []string) {
+				active = false
+			},
+			ValidateArgChar: func(r rune) bool {
+				return false
+			},
+		},
+	})
+
+	fmt.Println(resultMath)
 }
