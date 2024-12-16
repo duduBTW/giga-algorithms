@@ -7,8 +7,9 @@ import (
 
 	"github.com/a-h/templ"
 	advent2024 "github.com/dudubtw/giga-algorithms/advent-2024"
-	"github.com/dudubtw/giga-algorithms/components"
 	advent2024dat2 "github.com/dudubtw/giga-algorithms/advent-2024/day-2"
+	day3 "github.com/dudubtw/giga-algorithms/advent-2024/day-3"
+	"github.com/dudubtw/giga-algorithms/components"
 )
 
 func main() {
@@ -27,6 +28,7 @@ func main() {
 	http.HandleFunc("/advent-2024/day-1-part-2", advent2024Day1Part2Handler)
 
 	advent2024dat2.ServerHandlers()
+	day3.ServerHandlers()
 
 	// Start server in a goroutine
 	fmt.Println("Server is running on port 8080")

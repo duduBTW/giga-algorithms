@@ -1,0 +1,87 @@
+package day3
+
+import (
+	"github.com/dudubtw/giga-algorithms/components"
+	"strconv"
+	"strings"
+)
+
+type Part1ComponentProps struct {
+	Code string
+}
+
+templ Part1Component(props Part1ComponentProps) {
+	<div class="container mx-auto px-4 py-5">
+		<div class="py-2">
+			@components.Breadcrumbs(components.BreadcrumbsProps{
+				Items: []components.BreadcrumbItem{
+					{Label: "Home", Link: "/"},
+					{Label: "Advent of Code 2024", Link: "/advent-2024"},
+					{Label: "Day 3", Link: "/advent-2024/day-3-part-1"},
+				},
+			})
+		</div>
+		@components.Title("Day 3")
+		<div class="flex gap-4 items-start">
+			@Part1Code(props.Code)
+		</div>
+	</div>
+	<advent-data id={ IdsData } data-data={ props.Code }></advent-data>
+	<script>
+		function start() {
+			AdventOfCodeDay3Part1Handler()
+		}
+	</script>
+}
+
+templ Part1Code(code string) {
+	<div class="flex-1 break-words min-w-0 bg-stone-950 font-mono rounded-lg border border-gray-700 px-3 pb-3">
+		<div class="py-3 flex gap-3 items-baseline sticky top-0 bg-stone-950">
+			@components.Button(components.ButtonProps{
+				Label:   "Hilight",
+				Variant: "secondary",
+				Class:   "bg-white",
+				Id:      IdHilight,
+			})
+			@Total(0)
+			@ExpressionMetadata(ExpressionFoundPosition{})
+		</div>
+		@Part1CodeContent(code, []ExpressionFoundPosition{})
+	</div>
+}
+
+templ Total(value int) {
+	<div id={ IdsTotal } class="text-white">Total: { strconv.Itoa(value) }</div>
+}
+
+templ ExpressionMetadata(expression ExpressionFoundPosition) {
+	<div id={ IdsExpressionMetadata } class="ml-auto flex gap-2 text-zinc-300 text-sm">
+		if expression.Name != "" {
+			<div>{ expression.Name }</div>{ "//" }
+			<div>{ strings.Join(expression.Args, "x") }={ strconv.Itoa(MultiplyArgs(expression.Args)) }</div>
+		}
+	</div>
+}
+
+templ Part1CodeContent(code string, expressionsPosition []ExpressionFoundPosition) {
+	<div id={ CodeContent } class="text-gray-400 text-sm" contenteditable="true">
+		if len(expressionsPosition) > 0 {
+			<code class="flex flex-wrap gap-px break-all">
+				{ code[0:expressionsPosition[0].Start+1] }
+				for i, expression := range expressionsPosition {
+					<span tabindex="0" id={ IdsExpression } data-index={ strconv.Itoa(i) } class="bg-green-700 text-white rounded focus:bg-green-600 hover:bg-green-600 transition-colors break-all">
+						{ expression.Name }({ strings.Join(expression.Args, ",") })
+					</span>
+					if i < len(expressionsPosition) - 1 {
+						{ code[expression.End + 1:expressionsPosition[i + 1].Start+1] }
+					}
+				}
+				{ code[expressionsPosition[len(expressionsPosition) - 1].End + 1:len(code)] }
+			</code>
+		} else {
+			<code>
+				{ code }
+			</code>
+		}
+	</div>
+}

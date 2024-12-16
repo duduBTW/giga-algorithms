@@ -40,74 +40,119 @@ func RegexPart1(content string) int {
 
 type Expression struct {
 	Name            string
-	OnFound         func(vals []string)
 	ValidateArgChar func(rune) bool
 }
 
-func ExpressionFinder(input string, expressions []Expression) {
+type ExpressionFoundPosition struct {
+	Start int
+	End   int
+	Name  string
+	Args  []string
+}
+
+type ProcessExpression struct {
+	Completed       bool
+	Expression      Expression
+	Args            [][]rune
+	CurrentArgIndex int
+	Opened          bool
+	StartIndex      int
+	FoundPosition   ExpressionFoundPosition
+}
+
+type ProcessResult = int
+
+const (
+	Success   ProcessResult = 0
+	Completed ProcessResult = 1
+	Abort     ProcessResult = 2
+)
+
+func (process *ProcessExpression) divideArgs() ProcessResult {
+	if len(process.Args) < process.CurrentArgIndex+1 {
+		return Abort
+	}
+
+	process.CurrentArgIndex++
+	return Success
+}
+func (process *ProcessExpression) closeFunc(charIndex int) ProcessResult {
+	argStrings := make([]string, len(process.Args))
+	for i, runes := range process.Args {
+		argStrings[i] = string(runes)
+	}
+
+	process.FoundPosition = ExpressionFoundPosition{
+		Start: process.StartIndex,
+		End:   charIndex,
+		Name:  process.Expression.Name,
+		Args:  argStrings,
+	}
+	return Completed
+}
+func (process *ProcessExpression) functionArg(inputChar rune) ProcessResult {
+	if !process.Expression.ValidateArgChar(inputChar) {
+		return Abort
+	}
+
+	// Add new arg if necessary
+	if len(process.Args) <= process.CurrentArgIndex {
+		process.Args = append(process.Args, []rune{})
+	}
+	// Append char to arg
+	process.Args[process.CurrentArgIndex] = append(process.Args[process.CurrentArgIndex], inputChar)
+	return Success
+}
+func (process *ProcessExpression) openFunc() ProcessResult {
+	process.Opened = true
+	return Success
+}
+func (process *ProcessExpression) Process(charIndex int, inputChar rune) ProcessResult {
+	if process.Opened && inputChar == ',' {
+		return process.divideArgs()
+	}
+	if process.Opened && inputChar == ')' {
+		return process.closeFunc(charIndex)
+	}
+	if process.Opened {
+		return process.functionArg(inputChar)
+	}
+	if !process.Opened && inputChar == '(' {
+		return process.openFunc()
+	}
+
+	// Aborts if the function was not opened
+	return Abort
+}
+
+func ExpressionFinder(input string, expressions []Expression) []ExpressionFoundPosition {
 	runningExpressions := make([]int, len(expressions))
-	var completedExpression Expression
-	var args = [][]rune{}
-	currentArgIndex := 0
-	var opened bool
-	ops := false
+	completedExpression := ProcessExpression{}
+	result := []ExpressionFoundPosition{}
 
-	for _, inputChar := range input {
-		if completedExpression.Name != "" {
-			if opened && inputChar == ',' {
-				currentArgIndex++
+	for charIndex, inputChar := range input {
+		if completedExpression.Completed {
+			processResult := completedExpression.Process(charIndex, inputChar)
+			switch processResult {
+			case Success:
 				continue
-			}
-
-			if opened && inputChar == ')' {
-				argStrings := make([]string, len(args))
-				for i, runes := range args {
-					argStrings[i] = string(runes) // Convert each []rune to a string
-				}
-
-				completedExpression.OnFound(argStrings)
-				completedExpression = Expression{}
-				opened = false
-				currentArgIndex = 0
-				args = [][]rune{}
-				ops = false
+			case Completed:
+				result = append(result, completedExpression.FoundPosition)
+				completedExpression = ProcessExpression{}
 				continue
+			case Abort:
+				completedExpression = ProcessExpression{}
 			}
-
-			if opened {
-				if !completedExpression.ValidateArgChar(inputChar) {
-					opened = false
-					currentArgIndex = 0
-					args = [][]rune{}
-					ops = true
-				} else {
-					if len(args) <= currentArgIndex {
-						args = append(args, []rune{})
-					}
-
-					args[currentArgIndex] = append(args[currentArgIndex], inputChar)
-					continue
-				}
-			}
-
-			if !ops && !opened && inputChar == '(' {
-				opened = true
-				currentArgIndex = 0
-				args = [][]rune{}
-				continue
-			}
-
-			completedExpression = Expression{}
-			ops = false
 		}
 
-		// fmt.Println(string(inputChar), runningExpressions)
 		for index, expression := range expressions {
 			runes := []rune(expression.Name)
 			foundChar := runes[runningExpressions[index]]
 			if foundChar == inputChar {
 				if len(runes) == runningExpressions[index]+1 {
-					completedExpression = expression
+					completedExpression.Expression = expression
+					completedExpression.Completed = true
+					completedExpression.StartIndex = charIndex - len(expression.Name)
 					runningExpressions[index] = 0
 				} else {
 					runningExpressions[index]++
@@ -117,4 +162,20 @@ func ExpressionFinder(input string, expressions []Expression) {
 			}
 		}
 	}
+
+	return result
+}
+
+func MultiplyArgs(args []string) int {
+	result := 1
+	for _, val := range args {
+		numericVal, err := strconv.Atoi(val)
+		if err != nil {
+			continue
+		}
+
+		result *= numericVal
+	}
+
+	return result
 }

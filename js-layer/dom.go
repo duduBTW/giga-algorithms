@@ -4,11 +4,11 @@
 package jslayer
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"syscall/js"
-	"encoding/json"
 	"strings"
+	"syscall/js"
 )
 
 func GetElementById(id string) (js.Value, error) {
@@ -53,6 +53,14 @@ func Id(id string) string {
 	return "#" + id
 }
 
+func GetStringAttr(selector string, attr string) (string, error) {
+	element := js.Global().Get("document").Call("querySelector", selector)
+	if IsNil(element) {
+		return "", errors.New("Element not found")
+	}
+	return element.Get("dataset").Get(attr).String(), nil
+}
+
 func GetJsonData(id string) ([][]int, error) {
 	element := js.Global().Get("document").Call("getElementById", id)
 	if IsNil(element) {
@@ -60,7 +68,7 @@ func GetJsonData(id string) ([][]int, error) {
 	}
 	jsonData := element.Get("innerText").String()
 	jsonData = strings.Trim(strings.Replace(jsonData, "\"", "", 2), " ")
-	
+
 	var data [][]int
 	err := json.Unmarshal([]byte(jsonData), &data)
 	if err != nil {
@@ -87,19 +95,19 @@ func CopyToClipboard(text string) {
 	clipboard.Call("writeText", text)
 }
 
-func SetInnerHTML(selector string, html string) (error) {
+func SetInnerHTML(selector string, html string) error {
 	element := js.Global().Get("document").Call("querySelector", selector)
 	if IsNil(element) {
-		return errors.New("Element not found")	
+		return errors.New("Element not found")
 	}
 	element.Set("innerHTML", html)
 	return nil
 }
 
-func ReplaceWithHTML(selector string, html string) (error) {
+func ReplaceWithHTML(selector string, html string) error {
 	element := js.Global().Get("document").Call("querySelector", selector)
 	if IsNil(element) {
-			return errors.New("Element not found")    
+		return errors.New("Element not found")
 	}
 	element.Call("replaceWith", js.Global().Get("document").Call("createRange").Call("createContextualFragment", html))
 	return nil

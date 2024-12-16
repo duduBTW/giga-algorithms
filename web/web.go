@@ -10,6 +10,7 @@ import (
 	"github.com/dudubtw/giga-algorithms/controllers"
 
 	advent2024day2 "github.com/dudubtw/giga-algorithms/advent-2024/day-2"
+	day3 "github.com/dudubtw/giga-algorithms/advent-2024/day-3"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 	js.Global().Set("AdventOfCodeDay1Handler", js.FuncOf(controllers.AdventOfCodeDay1Handler))
 
 	advent2024day2.WebHandlers()
+	day3.WebHandlers()
 
 	js.Global().Call("start")
 

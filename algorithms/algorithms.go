@@ -28,6 +28,11 @@ var Algorithms = []Algorithm{
 		Link:     "/advent-2024/day-2-part-1",
 		Category: AdventOfCode2024,
 	},
+	{
+		Name:     "Day 3 - Mull It Over",
+		Link:     "/advent-2024/day-3-part-1",
+		Category: AdventOfCode2024,
+	},
 }
 
 var AdventOfCode2024 = Category{

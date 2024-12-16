@@ -21,6 +21,8 @@ type RegisterdEventListener struct {
 }
 
 func (event *EventListener) Add() {
+	event.Remove()
+
 	registerdEventListener := RegisterdEventListener{
 		EventListener: *event,
 		jsListener: js.FuncOf(func(this js.Value, args []js.Value) any {
@@ -33,12 +35,12 @@ func (event *EventListener) Add() {
 	event.__listeners = append(event.__listeners, registerdEventListener)
 }
 
-func (event EventListener) Remove() {
+func (event *EventListener) Remove() {
 	for _, listener := range event.__listeners {
 		__listen("removeEventListener", listener)
 	}
 
-	event.__listeners = []RegisterdEventListener{}
+	event.__listeners = nil
 }
 
 func __listen(function string, event RegisterdEventListener) {
