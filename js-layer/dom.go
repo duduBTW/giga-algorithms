@@ -61,18 +61,19 @@ func GetStringAttr(selector string, attr string) (string, error) {
 	return element.Get("dataset").Get(attr).String(), nil
 }
 
-func GetJsonData(id string) ([][]int, error) {
+func GetJsonData[T any](id string) (T, error) {
+	var data T
+
 	element := js.Global().Get("document").Call("getElementById", id)
 	if IsNil(element) {
-		return nil, errors.New("Element not found")
+		return data, errors.New("Element not found")
 	}
 	jsonData := element.Get("innerText").String()
 	jsonData = strings.Trim(strings.Replace(jsonData, "\"", "", 2), " ")
 
-	var data [][]int
 	err := json.Unmarshal([]byte(jsonData), &data)
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 	return data, nil
 }

@@ -13,7 +13,7 @@ import (
 )
 
 func getPt1Data() [][]int {
-	newData, err := jslayer.GetJsonData(IdsData)
+	newData, err := jslayer.GetJsonData[[][]int](IdsData)
 	if err != nil {
 		fmt.Println("Error getting getPt1Data data", err)
 		return nil

@@ -33,6 +33,11 @@ var Algorithms = []Algorithm{
 		Link:     "/advent-2024/day-3-part-1",
 		Category: AdventOfCode2024,
 	},
+	{
+		Name:     "Day 4 - Ceres Search",
+		Link:     "/advent-2024/day-4-part-1",
+		Category: AdventOfCode2024,
+	},
 }
 
 var AdventOfCode2024 = Category{

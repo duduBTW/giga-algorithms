@@ -43,7 +43,7 @@ func (state *StateProps[T]) Set(value T) {
 }
 
 func GetJsonData() [][]int {
-	data, err := jslayer.GetJsonData(constants.Advent2024Day1DataID)
+	data, err := jslayer.GetJsonData[[][]int](constants.Advent2024Day1DataID)
 	if err != nil {
 		fmt.Println("Error getting json data", err)
 		return nil

@@ -9,13 +9,14 @@ import (
 	advent2024 "github.com/dudubtw/giga-algorithms/advent-2024"
 	advent2024dat2 "github.com/dudubtw/giga-algorithms/advent-2024/day-2"
 	day3 "github.com/dudubtw/giga-algorithms/advent-2024/day-3"
+	day4 "github.com/dudubtw/giga-algorithms/advent-2024/day-4"
 	"github.com/dudubtw/giga-algorithms/components"
 )
 
 func main() {
 	// Create a new server
 	srv := &http.Server{
-		Addr: ":9081",
+		Addr: ":8080",
 	}
 
 	// PUBLIC SERVER
@@ -29,6 +30,7 @@ func main() {
 
 	advent2024dat2.ServerHandlers()
 	day3.ServerHandlers()
+	day4.ServerHandlers()
 
 	// Start server in a goroutine
 	fmt.Println("Server is running on port 8080")
