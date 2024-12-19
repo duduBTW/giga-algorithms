@@ -5,11 +5,9 @@ package day4
 
 import (
 	"fmt"
-	"math/rand"
 	"sort"
 	"strconv"
 	"syscall/js"
-	"time"
 
 	jslayer "github.com/dudubtw/giga-algorithms/js-layer"
 )
@@ -67,20 +65,11 @@ func getMatrix() [][]rune {
 	return matrix
 }
 
-func randomColor() string {
-	rand.Seed(time.Now().UnixNano())
-	r := rand.Intn(256)
-	g := rand.Intn(256)
-	b := rand.Intn(256)
-	return js.Global().Get("String").New("rgb(" + js.ValueOf(r).String() + "," + js.ValueOf(g).String() + "," + js.ValueOf(b).String() + ")").String()
-}
-
 func GetCell(position Position) (js.Value, error) {
 	return jslayer.QuerySelector(jslayer.Id(IdCell) + `[data-x-index="` + strconv.Itoa(position.X) + `"][data-y-index="` + strconv.Itoa(position.Y) + `"]`)
 }
 
 func DrawHighlights(highlights []Highlight) {
-	fmt.Println(highlights)
 	canvas, err := jslayer.QuerySelector(jslayer.Id(IdCanvas))
 	if err != nil {
 		fmt.Println("Could not draw highlight!")
@@ -120,27 +109,32 @@ func DrawHighlights(highlights []Highlight) {
 		}
 
 		boundingBox1 := startCell.Call("getBoundingClientRect")
+		box1ScrollWidth := startCell.Get("scrollWidth").Float()
 		boundingBox2 := endCell.Call("getBoundingClientRect")
+		box2ScrollWidth := endCell.Get("scrollWidth").Float()
 
 		// Calculate the container's padding
 		paddingTop := containerBox.Get("top").Float()
 		paddingLeft := containerBox.Get("left").Float()
 
+		js.Global().Call("scrollTo", 0, 0)
+		container.Call("scrollTo", 0, 0)
+
 		// Collect positions (corners of the divs, adjusted for padding)
 		positions := []Position{
 			{X: int(boundingBox1.Get("left").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox1.Get("left").Float() + boundingBox1.Get("width").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() - paddingTop)},
+			{X: int(boundingBox1.Get("left").Float() + box1ScrollWidth - paddingLeft), Y: int(boundingBox1.Get("top").Float() - paddingTop)},
 			{X: int(boundingBox1.Get("left").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() + boundingBox1.Get("height").Float() - paddingTop)},
-			{X: int(boundingBox1.Get("left").Float() + boundingBox1.Get("width").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() + boundingBox1.Get("height").Float() - paddingTop)},
+			{X: int(boundingBox1.Get("left").Float() + box1ScrollWidth - paddingLeft), Y: int(boundingBox1.Get("top").Float() + boundingBox1.Get("height").Float() - paddingTop)},
 			{X: int(boundingBox2.Get("left").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() + boundingBox2.Get("width").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() - paddingTop)},
+			{X: int(boundingBox2.Get("left").Float() + box2ScrollWidth - paddingLeft), Y: int(boundingBox2.Get("top").Float() - paddingTop)},
 			{X: int(boundingBox2.Get("left").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() + boundingBox2.Get("height").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() + boundingBox2.Get("width").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() + boundingBox2.Get("height").Float() - paddingTop)},
+			{X: int(boundingBox2.Get("left").Float() + box2ScrollWidth - paddingLeft), Y: int(boundingBox2.Get("top").Float() + boundingBox2.Get("height").Float() - paddingTop)},
 		}
 
 		hull := convexHull(positions)
 
-		context.Set("strokeStyle", randomColor())
+		context.Set("strokeStyle", "rgb(59 130 246)")
 		context.Set("lineWidth", 1)
 		context.Call("beginPath")
 
@@ -170,8 +164,10 @@ func setup() {
 			}
 
 			searchValue := inputElement.Get("value").String()
-			highlights := FindWordInstances(searchValue, matrix)
-			DrawHighlights(highlights)
+			go func() {
+				highlights := FindWordInstances(searchValue, matrix)
+				DrawHighlights(highlights)
+			}()
 		},
 	}
 }

@@ -2,7 +2,6 @@ package day4
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 )
@@ -104,7 +103,6 @@ func FindWordInstances(word string, input RuneMatrix) []Highlight {
 		}
 	}
 
-	fmt.Println(len(highlights))
 	return highlights
 }
 
