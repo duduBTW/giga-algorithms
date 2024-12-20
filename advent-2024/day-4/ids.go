@@ -15,6 +15,8 @@ var (
 	IdCanvas      = pt1("canvas")
 	IdMatrix      = pt1("matrix")
 	IdCell        = pt1("matrix-cell")
+	IdFindX       = pt1("find-x")
+	IdTotal       = pt1("total")
 )
 
 const Start = "AdventOfCodeDay4Part1Handler"

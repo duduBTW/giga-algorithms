@@ -910,9 +910,8 @@ body {
   background-color: rgb(239 68 68 / var(--tw-bg-opacity, 1));
 }
 
-.bg-secondary {
-  --tw-bg-opacity: 1;
-  background-color: rgb(97 117 138 / var(--tw-bg-opacity, 1));
+.bg-sec {
+  background-color: hsl(var(--secondary));
 }
 
 .bg-stone-950 {
@@ -1088,6 +1087,10 @@ body {
   color: rgb(239 68 68 / var(--tw-text-opacity, 1));
 }
 
+.text-sec-foreground {
+  color: hsl(var(--secondary-foreground));
+}
+
 .text-secondary {
   --tw-text-opacity: 1;
   color: rgb(97 117 138 / var(--tw-text-opacity, 1));
@@ -1152,8 +1155,8 @@ body {
   background-color: hsl(var(--primary) / 0.9);
 }
 
-.hover\:bg-secondary\/80:hover {
-  background-color: rgb(97 117 138 / 0.8);
+.hover\:bg-sec\/80:hover {
+  background-color: hsl(var(--secondary) / 0.8);
 }
 
 .hover\:text-accent-foreground:hover {

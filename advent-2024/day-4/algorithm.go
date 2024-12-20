@@ -42,20 +42,18 @@ func Neutral(position, amount int) int {
 	return position
 }
 
-var directions = map[string]Direction{
-	"up-left":  {X: Previous, Y: Previous},
-	"up":       {X: Neutral, Y: Previous},
-	"up-right": {X: Next, Y: Previous},
+const (
+	UpLeft    = "up-left"
+	Up        = "up"
+	UpRight   = "up-right"
+	DownLeft  = "down-left"
+	Down      = "down"
+	DownRight = "down-right"
+	Left      = "left"
+	Right     = "right"
+)
 
-	"down-left":  {X: Previous, Y: Next},
-	"down":       {X: Neutral, Y: Next},
-	"down-right": {X: Next, Y: Next},
-
-	"left":  {X: Previous, Y: Neutral},
-	"right": {X: Next, Y: Neutral},
-}
-
-func FindWordInstances(word string, input RuneMatrix) []Highlight {
+func FindWordInstances(word string, input RuneMatrix, directions map[string]Direction) []Highlight {
 	highlights := []Highlight{}
 
 	wordChars := make([]rune, len(word))
@@ -71,7 +69,7 @@ func FindWordInstances(word string, input RuneMatrix) []Highlight {
 			}
 
 			// if the rest of the word matches
-			for _, direction := range directions {
+			for directionKey, direction := range directions {
 				if !CanGoToDirection(CanGoToDirectionParams{
 					Input:     input,
 					Direction: direction,
@@ -95,8 +93,9 @@ func FindWordInstances(word string, input RuneMatrix) []Highlight {
 
 				if isCorrectWord {
 					highlights = append(highlights, Highlight{
-						Start: initialPosition,
-						End:   endPosition,
+						Start:     initialPosition,
+						End:       endPosition,
+						Direction: directionKey,
 					})
 				}
 			}
@@ -112,8 +111,9 @@ type Position struct {
 }
 
 type Highlight struct {
-	Start Position
-	End   Position
+	Start     Position
+	End       Position
+	Direction string
 }
 
 type IsCorrectWordParams struct {

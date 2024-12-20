@@ -8,7 +8,10 @@ import (
 	"sort"
 	"strconv"
 	"syscall/js"
+	"time"
 
+	"github.com/a-h/templ"
+	"github.com/dudubtw/giga-algorithms/controllers"
 	jslayer "github.com/dudubtw/giga-algorithms/js-layer"
 )
 
@@ -53,8 +56,6 @@ func crossProduct(p1, p2, p3 Position) int {
 	return (p2.X-p1.X)*(p3.Y-p1.Y) - (p2.Y-p1.Y)*(p3.X-p1.X)
 }
 
-var formSubmitHandler jslayer.EventListener
-
 func getMatrix() [][]rune {
 	matrix, err := jslayer.GetJsonData[[][]rune](IdData)
 	if err != nil {
@@ -65,8 +66,58 @@ func getMatrix() [][]rune {
 	return matrix
 }
 
+var cellCache = make(map[Position]js.Value)
+
 func GetCell(position Position) (js.Value, error) {
-	return jslayer.QuerySelector(jslayer.Id(IdCell) + `[data-x-index="` + strconv.Itoa(position.X) + `"][data-y-index="` + strconv.Itoa(position.Y) + `"]`)
+	cellFromCache, ok := cellCache[position]
+	if ok {
+		return cellFromCache, nil
+	}
+
+	newCell, err := jslayer.QuerySelector(jslayer.Id(IdCell) + `[data-x-index="` + strconv.Itoa(position.X) + `"][data-y-index="` + strconv.Itoa(position.Y) + `"]`)
+	if err != nil {
+		return newCell, err
+	}
+
+	cellCache[position] = newCell
+	return newCell, nil
+}
+
+type Box struct {
+	TopLeft     Position
+	TopRight    Position
+	BottomLeft  Position
+	BottomRight Position
+}
+
+var boxMap = make(map[Position]Box)
+
+func getBoundingBoxPositions(boundingBox js.Value, paddingLeft, paddingTop float64, position Position) Box {
+	cachedBox, ok := boxMap[position]
+	if ok {
+		return cachedBox
+	}
+
+	box := Box{
+		TopLeft: Position{
+			X: int(boundingBox.Get("left").Float() - paddingLeft),
+			Y: int(boundingBox.Get("top").Float() - paddingTop),
+		},
+		TopRight: Position{
+			X: int(boundingBox.Get("left").Float() + boundingBox.Get("width").Float() - paddingLeft),
+			Y: int(boundingBox.Get("top").Float() - paddingTop),
+		},
+		BottomLeft: Position{
+			X: int(boundingBox.Get("left").Float() - paddingLeft),
+			Y: int(boundingBox.Get("top").Float() + boundingBox.Get("height").Float() - paddingTop),
+		},
+		BottomRight: Position{
+			X: int(boundingBox.Get("left").Float() + boundingBox.Get("width").Float() - paddingLeft),
+			Y: int(boundingBox.Get("top").Float() + boundingBox.Get("height").Float() - paddingTop),
+		},
+	}
+	boxMap[position] = box
+	return box
 }
 
 func DrawHighlights(highlights []Highlight) {
@@ -95,6 +146,8 @@ func DrawHighlights(highlights []Highlight) {
 	canvasHeight := canvas.Get("height").Int()
 	context.Call("clearRect", 0, 0, canvasWidth, canvasHeight)
 
+	start := time.Now()
+
 	for _, highlight := range highlights {
 		startCell, err := GetCell(highlight.Start)
 		if err != nil {
@@ -109,9 +162,9 @@ func DrawHighlights(highlights []Highlight) {
 		}
 
 		boundingBox1 := startCell.Call("getBoundingClientRect")
-		box1ScrollWidth := startCell.Get("scrollWidth").Float()
+		// box1ScrollWidth := startCell.Get("scrollWidth").Float()
 		boundingBox2 := endCell.Call("getBoundingClientRect")
-		box2ScrollWidth := endCell.Get("scrollWidth").Float()
+		// box2ScrollWidth := endCell.Get("scrollWidth").Float()
 
 		// Calculate the container's padding
 		paddingTop := containerBox.Get("top").Float()
@@ -120,16 +173,12 @@ func DrawHighlights(highlights []Highlight) {
 		js.Global().Call("scrollTo", 0, 0)
 		container.Call("scrollTo", 0, 0)
 
-		// Collect positions (corners of the divs, adjusted for padding)
+		box1 := getBoundingBoxPositions(boundingBox1, paddingLeft, paddingTop, highlight.Start)
+		box2 := getBoundingBoxPositions(boundingBox2, paddingLeft, paddingTop, highlight.End)
+
 		positions := []Position{
-			{X: int(boundingBox1.Get("left").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox1.Get("left").Float() + box1ScrollWidth - paddingLeft), Y: int(boundingBox1.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox1.Get("left").Float() - paddingLeft), Y: int(boundingBox1.Get("top").Float() + boundingBox1.Get("height").Float() - paddingTop)},
-			{X: int(boundingBox1.Get("left").Float() + box1ScrollWidth - paddingLeft), Y: int(boundingBox1.Get("top").Float() + boundingBox1.Get("height").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() + box2ScrollWidth - paddingLeft), Y: int(boundingBox2.Get("top").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() - paddingLeft), Y: int(boundingBox2.Get("top").Float() + boundingBox2.Get("height").Float() - paddingTop)},
-			{X: int(boundingBox2.Get("left").Float() + box2ScrollWidth - paddingLeft), Y: int(boundingBox2.Get("top").Float() + boundingBox2.Get("height").Float() - paddingTop)},
+			box1.TopLeft, box1.TopRight, box1.BottomLeft, box1.BottomRight,
+			box2.TopLeft, box2.TopRight, box2.BottomLeft, box2.BottomRight,
 		}
 
 		hull := convexHull(positions)
@@ -147,27 +196,116 @@ func DrawHighlights(highlights []Highlight) {
 		context.Call("closePath")
 		context.Call("stroke")
 	}
+
+	elapsed := time.Since(start) // Calculate elapsed time
+	fmt.Printf("Function took %s to run\n", elapsed)
 }
+
+func MaxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func MinInt(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+var allDirections = map[string]Direction{
+	UpLeft:    {X: Previous, Y: Previous},
+	Up:        {X: Neutral, Y: Previous},
+	UpRight:   {X: Next, Y: Previous},
+	DownLeft:  {X: Previous, Y: Next},
+	Down:      {X: Neutral, Y: Next},
+	DownRight: {X: Next, Y: Next},
+	Left:      {X: Previous, Y: Neutral},
+	Right:     {X: Next, Y: Neutral},
+}
+
+var angledDirections = map[string]Direction{
+	UpLeft:    {X: Previous, Y: Previous},
+	UpRight:   {X: Next, Y: Previous},
+	DownLeft:  {X: Previous, Y: Next},
+	DownRight: {X: Next, Y: Next},
+}
+
+var formSubmitHandler jslayer.EventListener
+var findXClickHandler jslayer.EventListener
+var total controllers.StateProps[int]
 
 func setup() {
 	matrix := getMatrix()
+
+	total = controllers.StateProps[int]{
+		Value:  0,
+		Target: jslayer.Id(IdTotal),
+		RenderComponent: func(value int) templ.Component {
+			return TotalResults(value)
+		},
+	}
+
+	var getInputValue = func() (string, error) {
+		inputElement, err := jslayer.QuerySelector(jslayer.Id(IdSearchInput))
+		if err != nil {
+			return "", err
+		}
+		return inputElement.Get("value").String(), nil
+	}
 
 	formSubmitHandler = jslayer.EventListener{
 		Selector:  jslayer.Id(IdSearchForm),
 		EventType: "submit",
 		Listener: func(this js.Value, args []js.Value) {
 			args[0].Call("preventDefault")
-
-			inputElement, err := jslayer.QuerySelector(jslayer.Id(IdSearchInput))
+			searchValue, err := getInputValue()
 			if err != nil {
 				return
 			}
 
-			searchValue := inputElement.Get("value").String()
-			go func() {
-				highlights := FindWordInstances(searchValue, matrix)
-				DrawHighlights(highlights)
-			}()
+			highlights := FindWordInstances(searchValue, matrix, allDirections)
+			total.Set(len(highlights))
+			DrawHighlights(highlights)
+		},
+	}
+
+	findXClickHandler = jslayer.EventListener{
+		Selector:  jslayer.Id(IdFindX),
+		EventType: "click",
+		Listener: func(this js.Value, args []js.Value) {
+			searchValue, err := getInputValue()
+			if err != nil {
+				return
+			}
+
+			highlights := FindWordInstances(searchValue, matrix, angledDirections)
+			middlePoints := make(map[string]Highlight)
+			currentTotal := 0
+			validH := []Highlight{}
+
+			for _, highlight := range highlights {
+				minY := MaxInt(highlight.Start.Y, highlight.End.Y)
+				maxX := MaxInt(highlight.Start.X, highlight.End.X)
+
+				middlePoint := strconv.Itoa(minY-1) + "-" + strconv.Itoa(maxX-1)
+
+				cHighlight, ok := middlePoints[middlePoint]
+				if ok {
+					currentTotal++
+					fmt.Println(highlight, cHighlight)
+					validH = append(validH, highlight, cHighlight)
+					delete(middlePoints, middlePoint)
+					continue
+				}
+
+				middlePoints[middlePoint] = highlight
+			}
+
+			total.Set(currentTotal)
+			DrawHighlights(validH)
 		},
 	}
 }
@@ -177,6 +315,7 @@ func WebHandlers() {
 		setup()
 
 		formSubmitHandler.Add()
+		findXClickHandler.Add()
 
 		return nil
 	}))
