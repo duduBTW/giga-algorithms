@@ -27,11 +27,7 @@ templ Part1Component(props Part1ComponentProps) {
 		</div>
 	</div>
 	<advent-data id={ IdsData } data-data={ props.Code }></advent-data>
-	<script>
-		function start() {
-			AdventOfCodeDay3Part1Handler()
-		}
-	</script>
+	@components.StartScript(Start)
 }
 
 templ Part1Code(code string) {

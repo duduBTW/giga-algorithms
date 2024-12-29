@@ -17,3 +17,5 @@ var (
 	IdsPt1RadioContainer   = pt1("radio-container")
 	IdsPt1Radio            = pt1("radio")
 )
+
+const Start = "AdventOfCodeDay2Part1Handler"

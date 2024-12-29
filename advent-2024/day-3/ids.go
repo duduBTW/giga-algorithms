@@ -16,3 +16,5 @@ var (
 	IdsExpression         = pt1("expression")
 	IdsExpressionMetadata = pt1("expression-metadata")
 )
+
+const Start = "AdventOfCodeDay3Part1Handler"

@@ -37,7 +37,9 @@ templ RadioGroupOption(option RadioGroupOptionProps, id, selected string) {
 		<div class="relative size-4">
 			<i data-lucide="circle" class="size-4 text-secondary"></i>
 			if option.Value == selected {
-				<div class="absolute size-2 top-1 left-1 bg-indigo-500 rounded-full scale-1 transition-transform"></div>
+				<div class="flex items-center justify-center size-4 absolute top-0 left-0">
+					<div class="size-2.5 bg-indigo-500 rounded-full scale-1 transition-transform"></div>
+				</div>
 			}
 		</div>
 		<span>

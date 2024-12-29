@@ -108,7 +108,7 @@ func setup() {
 }
 
 func WebHandlers() {
-	js.Global().Set("AdventOfCodeDay2Part1Handler", js.FuncOf(func(this js.Value, args []js.Value) any {
+	js.Global().Set(Start, js.FuncOf(func(this js.Value, args []js.Value) any {
 		setup()
 
 		calculateAllPart1Handler.Add()

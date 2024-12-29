@@ -1,0 +1,79 @@
+package day5
+
+import (
+	"github.com/dudubtw/giga-algorithms/components"
+	"strconv"
+)
+
+type ComponentProps struct {
+	Manual Manual
+}
+
+templ Component(props ComponentProps) {
+	<div class="h-screen w-screen flex flex-col gap-2">
+		@Header()
+		<div class="flex-1 flex gap-2 px-4 pb-4 overflow-hidden">
+			@PagesComponent(PagesProps{
+				Pages: props.Manual.Pages,
+			})
+			<div class="flex-[0.7] flex flex-col gap-2">
+				@Controls()
+				@Order(OrderProps{
+					Order: props.Manual.Orders,
+				})
+			</div>
+		</div>
+	</div>
+}
+
+templ Header() {
+	<div class="py-2 container mx-auto px-4 pt-5">
+		@components.Breadcrumbs(components.BreadcrumbsProps{
+			Items: []components.BreadcrumbItem{
+				{Label: "Home", Link: "/"},
+				{Label: "Advent of Code 2024", Link: "/advent-2024"},
+				{Label: "Day 5", Link: Route},
+			},
+		})
+		@components.Title("Day 5")
+	</div>
+}
+
+templ Controls() {
+	<div class="bg-gray-50 rounded p-3">Content</div>
+}
+
+type PagesProps struct {
+	Pages [][]int
+}
+
+templ PagesComponent(props PagesProps) {
+	<div class="flex-1 bg-gray-50 rounded p-3 overflow-y-auto overflow-x-auto flex flex-col gap-2 items-start scrollbar">
+		<h2 class="mb-2 text-secondary text-sm font-medium">Pages</h2>
+		for _, line := range props.Pages {
+			<div class="flex bg-white rounded-lg">
+				for index, page := range line {
+					<div class="size-[44px] flex justify-center items-center rounded-md">{ strconv.Itoa(page) }</div>
+					if len(line) - 1 != index {
+						<div class="w-1 h-full bg-gray-50"></div>
+					}
+				}
+			</div>
+		}
+	</div>
+}
+
+type OrderProps struct {
+	Order []ManualOrder
+}
+
+templ Order(props OrderProps) {
+	<div class="flex-1 bg-gray-50 rounded p-3 grid grid-cols-4 gap-3 overflow-y-auto scrollbar">
+		for _, order := range props.Order {
+			<div class="aspect-[1.4/1] flex bg-white text-sm text-secondary rounded">
+				<div class="flex-1 flex items-end justify-start p-1">{ strconv.Itoa(order.X) }</div>
+				<div class="flex-1 border-l border-l-gray-100 flex items-end justify-end p-1">{ strconv.Itoa(order.Y) }</div>
+			</div>
+		}
+	</div>
+}

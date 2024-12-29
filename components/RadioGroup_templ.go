@@ -141,7 +141,7 @@ func RadioGroupOption(option RadioGroupOptionProps, id, selected string) templ.C
 			return templ_7745c5c3_Err
 		}
 		if option.Value == selected {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"absolute size-2 top-1 left-1 bg-indigo-500 rounded-full scale-1 transition-transform\"></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex items-center justify-center size-4 absolute top-0 left-0\"><div class=\"size-2.5 bg-indigo-500 rounded-full scale-1 transition-transform\"></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -153,7 +153,7 @@ func RadioGroupOption(option RadioGroupOptionProps, id, selected string) templ.C
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(option.Label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/RadioGroup.templ`, Line: 44, Col: 17}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `components/RadioGroup.templ`, Line: 46, Col: 17}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {

@@ -40,11 +40,7 @@ templ Day2Part1Component(props Day2Part1Props) {
 		</div>
 	</div>
 	@templ.JSONScript(IdsData, GenerateJsonDataPt1(props))
-	<script>
-		function start() {
-			AdventOfCodeDay2Part1Handler()
-		}
-	</script>
+	@components.StartScript(Start)
 }
 
 templ Part1Right() {
@@ -55,7 +51,7 @@ templ Part1Right() {
 }
 
 templ Part1Total(total int) {
-	<div id={ IdsPart1TotalContainer } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+	<div id={ IdsPart1TotalContainer } class="p-4 rounded-lg bg-gray-50 flex flex-col gap-3">
 		<div class="flex flex-col">
 			<h3 class="font-bold text-sm text-secondary">Safe reports</h3>
 			@Part1TotalValue(total)
@@ -92,7 +88,7 @@ func getfilterRadioOptions() components.RadioGroupProps {
 }
 
 templ Part1Sort() {
-	<div id={ "" } class="p-4 rounded-lg border border-divider flex flex-col gap-3">
+	<div id={ "" } class="p-4 rounded-lg bg-gray-50 flex flex-col gap-2">
 		<h3 class="font-bold text-sm text-secondary">Filters</h3>
 		@Part1SortRadio(getfilterRadioOptions())
 	</div>
@@ -105,7 +101,7 @@ templ Part1SortRadio(props components.RadioGroupProps) {
 }
 
 templ Part1TotalValue(total int) {
-	<p id={ IdsPart1TotalValue } class="text-lg">{ strconv.Itoa(total) }</p>
+	<p id={ IdsPart1TotalValue } class="text-xl">{ strconv.Itoa(total) }</p>
 }
 
 type Part1ListProps struct {

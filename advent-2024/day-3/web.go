@@ -166,7 +166,7 @@ func setup() {
 }
 
 func WebHandlers() {
-	js.Global().Set("AdventOfCodeDay3Part1Handler", js.FuncOf(func(this js.Value, args []js.Value) any {
+	js.Global().Set(Start, js.FuncOf(func(this js.Value, args []js.Value) any {
 		setup()
 
 		hilightClickHandler.Add()
