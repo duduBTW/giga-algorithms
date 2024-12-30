@@ -70,10 +70,10 @@ func ReadInput() (Manual, error) {
 		}
 		manual.OrderLeft[rightItem][leftItem] = true
 
-		// manual.Orders = append(manual.Orders, ManualOrder{
-		// 	X: x,
-		// 	Y: y,
-		// })
+		manual.Orders = append(manual.Orders, ManualOrder{
+			X: leftItem,
+			Y: rightItem,
+		})
 	}
 
 	for _, line := range strings.Split(pagesContent, "\n") {
@@ -104,31 +104,35 @@ type ValidParams struct {
 	i              int
 }
 
-func IsValidLeft(params ValidParams) bool {
+const Invalid = -1
+
+func FindInvalidLeftIndex(params ValidParams) int {
 	for j := 0; j < params.i; j++ {
 		comparingPage := params.pageCollection[j]
 		_, ok := params.manual.OrderRight[params.page][comparingPage]
 		if ok {
-			return false
+			return j
 		}
 	}
 
-	return true
+	return Invalid
 }
 
-func IsValidRight(params ValidParams) bool {
+func FindInvalidRightIndex(params ValidParams) int {
 	for j := params.i; j < len(params.pageCollection); j++ {
 		comparingPage := params.pageCollection[j]
 		_, ok := params.manual.OrderLeft[params.page][comparingPage]
 		if ok {
-			return false
+			return j
 		}
 	}
 
-	return true
+	return Invalid
 }
 
-func IsValidPage(manual Manual, pageCollection []int) bool {
+func IsValidPageCollection(manual Manual, pageCollection []int) (bool, []int) {
+	var invalid = []int{Invalid, Invalid}
+
 	for i := 1; i < len(pageCollection); i++ {
 		params := ValidParams{
 			manual:         manual,
@@ -137,16 +141,27 @@ func IsValidPage(manual Manual, pageCollection []int) bool {
 			i:              i,
 		}
 
-		if !IsValidLeft(params) || !IsValidRight(params) {
-			return false
+		invalidLeftIndex := FindInvalidLeftIndex(params)
+		if invalidLeftIndex != -1 {
+			return false, []int{i, invalidLeftIndex}
 		}
+
+		invalidRightIndex := FindInvalidRightIndex(params)
+		if invalidRightIndex != -1 {
+			return false, []int{i, invalidRightIndex}
+		}
+
 		// Has no middle index
 		if len(pageCollection)%2 == 0 {
-			return false
+			return false, invalid
 		}
 	}
 
-	return true
+	return true, invalid
+}
+
+func FindPageCollectionMiddleIndex(pageCollection []int) int {
+	return int(math.Ceil(float64(len(pageCollection))/2)) - 1
 }
 
 func ValidateManual(manual Manual) ManualValidPages {
@@ -154,17 +169,66 @@ func ValidateManual(manual Manual) ManualValidPages {
 	total := 0
 
 	for _, pageCollection := range manual.Pages {
-		isValidPage := IsValidPage(manual, pageCollection)
+		isValidPage, _ := IsValidPageCollection(manual, pageCollection)
 		if !isValidPage {
 			continue
 		}
 
-		middleIndex := int(math.Ceil(float64(len(pageCollection))/2)) - 1
+		middleIndex := FindPageCollectionMiddleIndex(pageCollection)
 		total += pageCollection[middleIndex]
 	}
 
 	fmt.Println(total)
 	return manualValidPages
+}
+
+func fixPageCollection(pageCollection, invalidPageIndexes []int) []int {
+	fixedPagedCollection := make([]int, len(pageCollection))
+	copy(fixedPagedCollection, pageCollection)
+
+	firstIndex := invalidPageIndexes[0]
+	secondIndex := invalidPageIndexes[1]
+
+	first := fixedPagedCollection[firstIndex]
+	second := fixedPagedCollection[secondIndex]
+
+	// Flips index
+	fixedPagedCollection[firstIndex] = second
+	fixedPagedCollection[secondIndex] = first
+
+	return fixedPagedCollection
+}
+
+func FixManual(manual Manual) int {
+	total := 0
+
+	for _, originalPageCollection := range manual.Pages {
+		fixedPagedCollection := make([]int, len(originalPageCollection))
+		copy(fixedPagedCollection, originalPageCollection)
+
+		wasFixed := false
+		isValidPageCollection := false
+
+		for !isValidPageCollection {
+			isValidFixedPageCollection, invalidPageIndexes := IsValidPageCollection(manual, fixedPagedCollection)
+			if isValidFixedPageCollection {
+				// Breaks out of the loop if the page is valid
+				isValidPageCollection = true
+				continue
+			}
+
+			// Fix page
+			wasFixed = true
+			fixedPagedCollection = fixPageCollection(fixedPagedCollection, invalidPageIndexes)
+		}
+
+		if wasFixed {
+			middleIndex := FindPageCollectionMiddleIndex(fixedPagedCollection)
+			total += fixedPagedCollection[middleIndex]
+		}
+	}
+
+	return total
 }
 
 func roundUpInt(x, multiple int) int {
