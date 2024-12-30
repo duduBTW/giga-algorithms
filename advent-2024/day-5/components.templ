@@ -19,7 +19,7 @@ templ Component(props ComponentProps) {
 			<div class="flex-[0.7] flex flex-col gap-2">
 				@Controls()
 				@Order(OrderProps{
-					Order: props.Manual.Orders,
+					Manual: props.Manual,
 				})
 			</div>
 		</div>
@@ -64,11 +64,48 @@ templ PagesComponent(props PagesProps) {
 }
 
 type OrderProps struct {
-	Order []ManualOrder
+	Manual Manual
 }
 
 templ Order(props OrderProps) {
-	<div class="flex-1 bg-gray-50 rounded p-3 grid grid-cols-4 gap-3 overflow-y-auto scrollbar">
+	<div class="flex-1 bg-gray-50 rounded overflow-hidden flex flex-col">
+		@Tabs(TabsProps{ActiveTab: "all", Manual: props.Manual})
+	</div>
+}
+
+var all = components.TabItemProps{Label: "All", Value: "all", IsActive: true}
+var tabs = []components.TabItemProps{
+	all,
+	{Label: "Left", Value: "left"},
+	{Label: "Right", Value: "right"},
+}
+
+type TabsProps struct {
+	ActiveTab string
+	Manual    Manual
+}
+
+templ Tabs(props TabsProps) {
+	<div class="flex flex-col gap-1 overflow-hidden">
+		<div class="px-3 pt-3">
+			@components.Tabs() {
+				for _, tab := range tabs {
+					@components.TabItem(components.TabItemProps{Label: tab.Label, Value: tab.Value, IsActive: tab.Value == props.ActiveTab})
+				}
+			}
+		</div>
+		if props.ActiveTab == all.Value {
+			@AllTabContent(AllTabContentProps{Order: props.Manual.Orders})
+		}
+	</div>
+}
+
+type AllTabContentProps struct {
+	Order []ManualOrder
+}
+
+templ AllTabContent(props AllTabContentProps) {
+	<div class="grid grid-cols-4 gap-3 overflow-y-auto scrollbar px-3 pb-3 pt-2">
 		for _, order := range props.Order {
 			<div class="aspect-[1.4/1] flex bg-white text-sm text-secondary rounded">
 				<div class="flex-1 flex items-end justify-start p-1">{ strconv.Itoa(order.X) }</div>

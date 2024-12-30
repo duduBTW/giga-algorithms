@@ -8,6 +8,6 @@ import (
 
 func main() {
 	manual, _ := day5.ReadInput()
-	total := day5.ValidateManual(manual)
+	total := day5.FixManual(manual)
 	fmt.Println(total)
 }
