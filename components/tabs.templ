@@ -1,7 +1,7 @@
 package components
 
 templ Tabs() {
-	<div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 p-1 text-secondary">
+	<div class="inline-flex h-9 items-center justify-center rounded-lg bg-zinc-100 px-1.5 py-1 text-secondary">
 		{ children... }
 	</div>
 }
@@ -10,10 +10,17 @@ type TabItemProps struct {
 	Label    string
 	Value    string
 	IsActive bool
+	Id       string
+}
+
+var TabItemValueAttr = "value"
+
+func (props TabItemProps) TabItemAttr() templ.Attributes {
+	return templ.Attributes{"data-" + TabItemValueAttr: props.Value}
 }
 
 templ TabItem(props TabItemProps) {
-	<div class="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-zinc-200 data-[active]:text-foreground data-[active]:shadow leading-[18px]" data-active?={ props.IsActive }>{ props.Label } </div>
+	<div id={ props.Id } class="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-white data-[active]:text-foreground data-[active]:shadow leading-[18px] hover:bg-zinc-200" { props.TabItemAttr()... } data-active?={ props.IsActive }>{ props.Label } </div>
 }
 
 templ TabContent() {

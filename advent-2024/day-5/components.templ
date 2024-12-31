@@ -1,12 +1,22 @@
 package day5
 
 import (
+	"encoding/json"
 	"github.com/dudubtw/giga-algorithms/components"
 	"strconv"
+	"strings"
 )
 
 type ComponentProps struct {
 	Manual Manual
+}
+
+func GenerateJsonData(props ComponentProps) string {
+	jsonBytes, err := json.Marshal(props.Manual)
+	if err != nil {
+		return ""
+	}
+	return string(jsonBytes)
 }
 
 templ Component(props ComponentProps) {
@@ -16,7 +26,7 @@ templ Component(props ComponentProps) {
 			@PagesComponent(PagesProps{
 				Pages: props.Manual.Pages,
 			})
-			<div class="flex-[0.7] flex flex-col gap-2">
+			<div class="flex-[0.9] flex flex-col gap-2">
 				@Controls()
 				@Order(OrderProps{
 					Manual: props.Manual,
@@ -24,6 +34,8 @@ templ Component(props ComponentProps) {
 			</div>
 		</div>
 	</div>
+	@templ.JSONScript(IdData, GenerateJsonData(props))
+	@components.StartScript(Start)
 }
 
 templ Header() {
@@ -40,7 +52,29 @@ templ Header() {
 }
 
 templ Controls() {
-	<div class="bg-gray-50 rounded p-3">Content</div>
+	<div class="bg-gray-50 rounded p-3 flex items-center justify-between">
+		@Total(0)
+		<div class="flex gap-1">
+			@components.Button(components.ButtonProps{
+				Variant: "primary",
+				Size:    "sm",
+				Label:   "Find",
+				Type:    "submit",
+				Id:      IdFindButton,
+			})
+			@components.Button(components.ButtonProps{
+				Variant: "outline",
+				Size:    "sm",
+				Label:   "Fix",
+				Type:    "button",
+				Id:      IdFixButton,
+			})
+		</div>
+	</div>
+}
+
+templ Total(value int) {
+	<div id={ IdTotal }>Total: { strconv.Itoa(value) } </div>
 }
 
 type PagesProps struct {
@@ -49,7 +83,7 @@ type PagesProps struct {
 
 templ PagesComponent(props PagesProps) {
 	<div class="flex-1 bg-gray-50 rounded p-3 overflow-y-auto overflow-x-auto flex flex-col gap-2 items-start scrollbar">
-		<h2 class="mb-2 text-secondary text-sm font-medium">Pages</h2>
+		<h2 class="mb-1 text-secondary text-sm font-medium">Pages</h2>
 		for _, line := range props.Pages {
 			<div class="flex bg-white rounded-lg">
 				for index, page := range line {
@@ -74,11 +108,9 @@ templ Order(props OrderProps) {
 }
 
 var all = components.TabItemProps{Label: "All", Value: "all", IsActive: true}
-var tabs = []components.TabItemProps{
-	all,
-	{Label: "Left", Value: "left"},
-	{Label: "Right", Value: "right"},
-}
+var left = components.TabItemProps{Label: "Left", Value: "left"}
+var right = components.TabItemProps{Label: "Right", Value: "right"}
+var tabList = []components.TabItemProps{all, left, right}
 
 type TabsProps struct {
 	ActiveTab string
@@ -86,16 +118,32 @@ type TabsProps struct {
 }
 
 templ Tabs(props TabsProps) {
-	<div class="flex flex-col gap-1 overflow-hidden">
-		<div class="px-3 pt-3">
+	<div id={ IdTabs } class="flex flex-col gap-1 overflow-hidden">
+		<div class="px-3 pt-3 flex items-end justify-end">
 			@components.Tabs() {
-				for _, tab := range tabs {
-					@components.TabItem(components.TabItemProps{Label: tab.Label, Value: tab.Value, IsActive: tab.Value == props.ActiveTab})
+				for _, tab := range tabList {
+					@components.TabItem(components.TabItemProps{
+						Label: tab.Label,
+						Value: tab.Value, IsActive: tab.Value == props.ActiveTab,
+						Id: IdTabItem,
+					})
 				}
 			}
 		</div>
 		if props.ActiveTab == all.Value {
 			@AllTabContent(AllTabContentProps{Order: props.Manual.Orders})
+		}
+		if props.ActiveTab == right.Value {
+			@SideTabContent(SideTabContentProps{
+				Order: props.Manual.OrderRight,
+				Side:  rightSide,
+			})
+		}
+		if props.ActiveTab == left.Value {
+			@SideTabContent(SideTabContentProps{
+				Order: props.Manual.OrderRight,
+				Side:  leftSide,
+			})
 		}
 	</div>
 }
@@ -110,6 +158,48 @@ templ AllTabContent(props AllTabContentProps) {
 			<div class="aspect-[1.4/1] flex bg-white text-sm text-secondary rounded">
 				<div class="flex-1 flex items-end justify-start p-1">{ strconv.Itoa(order.X) }</div>
 				<div class="flex-1 border-l border-l-gray-100 flex items-end justify-end p-1">{ strconv.Itoa(order.Y) }</div>
+			</div>
+		}
+	</div>
+}
+
+type SideName string
+
+const (
+	leftSide  SideName = "left"
+	rightSide SideName = "right"
+)
+
+type SideTabContentProps struct {
+	Order Side
+	Side  SideName
+}
+
+func sideTabContentClass(props SideTabContentProps) string {
+	baseClasses := "flex bg-white text-xs text-secondary rounded"
+
+	var directionClass string
+	switch props.Side {
+	case leftSide:
+		directionClass = "flex-row"
+	case rightSide:
+		directionClass = "flex-row-reverse"
+	}
+
+	classes := []string{baseClasses}
+	classes = append(classes, directionClass)
+
+	return strings.Join(classes, " ")
+}
+
+templ SideTabContent(props SideTabContentProps) {
+	<div class="flex flex-col overflow-y-auto overflow-x-auto scrollbar px-3 pb-3 pt-2 gap-3">
+		for key, value := range props.Order {
+			<div class={ sideTabContentClass(props) }>
+				<div class="flex-1 aspect-[1/1.4] bg-black text-white flex items-center justify-center p-2 rounded m-1">{ strconv.Itoa(key) }</div>
+				for k2 := range value {
+					<div class="flex-1 aspect-[1/1.4] flex items-center justify-center p-3">{ strconv.Itoa(k2) }</div>
+				}
 			</div>
 		}
 	</div>

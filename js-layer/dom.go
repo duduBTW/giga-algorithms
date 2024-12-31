@@ -61,6 +61,13 @@ func GetStringAttr(selector string, attr string) (string, error) {
 	return element.Get("dataset").Get(attr).String(), nil
 }
 
+func removeFirstAndLastChar(s string) string {
+	if len(s) <= 1 {
+		return s
+	}
+	return s[1 : len(s)-2]
+}
+
 func GetJsonData[T any](id string) (T, error) {
 	var data T
 
@@ -69,7 +76,8 @@ func GetJsonData[T any](id string) (T, error) {
 		return data, errors.New("Element not found")
 	}
 	jsonData := element.Get("innerText").String()
-	jsonData = strings.Trim(strings.Replace(jsonData, "\"", "", 2), " ")
+	jsonData = strings.Trim(strings.ReplaceAll(removeFirstAndLastChar(jsonData), `\"`, `"`), " ")
+	fmt.Println(jsonData)
 
 	err := json.Unmarshal([]byte(jsonData), &data)
 	if err != nil {

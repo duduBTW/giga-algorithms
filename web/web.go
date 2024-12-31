@@ -13,6 +13,7 @@ import (
 	advent2024day2 "github.com/dudubtw/giga-algorithms/advent-2024/day-2"
 	day3 "github.com/dudubtw/giga-algorithms/advent-2024/day-3"
 	day4 "github.com/dudubtw/giga-algorithms/advent-2024/day-4"
+	day5 "github.com/dudubtw/giga-algorithms/advent-2024/day-5"
 )
 
 var startEvent = jslayer.EventListener{
@@ -30,6 +31,7 @@ func main() {
 	advent2024day2.WebHandlers()
 	day3.WebHandlers()
 	day4.WebHandlers()
+	day5.WebHandlers()
 
 	loadCallback := js.FuncOf(func(this js.Value, args []js.Value) any {
 		if !jslayer.IsNil(js.Global().Get("start")) {

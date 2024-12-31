@@ -1,7 +1,6 @@
 package day5
 
 import (
-	"fmt"
 	"math"
 	"os"
 	"strconv"
@@ -164,8 +163,8 @@ func FindPageCollectionMiddleIndex(pageCollection []int) int {
 	return int(math.Ceil(float64(len(pageCollection))/2)) - 1
 }
 
-func ValidateManual(manual Manual) ManualValidPages {
-	manualValidPages := ManualValidPages{}
+func ValidateManual(manual Manual) int {
+	// manualValidPages := ManualValidPages{}
 	total := 0
 
 	for _, pageCollection := range manual.Pages {
@@ -178,8 +177,7 @@ func ValidateManual(manual Manual) ManualValidPages {
 		total += pageCollection[middleIndex]
 	}
 
-	fmt.Println(total)
-	return manualValidPages
+	return total
 }
 
 func fixPageCollection(pageCollection, invalidPageIndexes []int) []int {
