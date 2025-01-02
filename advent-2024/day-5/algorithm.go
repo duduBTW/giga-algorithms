@@ -198,10 +198,12 @@ func fixPageCollection(pageCollection, invalidPageIndexes []int) []int {
 	return fixedPagedCollection
 }
 
-func FixManual(manual Manual) int {
+func FixManual(manual Manual) (int, [][]int, [][]int) {
 	total := 0
+	fixedResult := make([][]int, len(manual.Pages))
+	invalidPages := make([][]int, len(manual.Pages))
 
-	for _, originalPageCollection := range manual.Pages {
+	for index, originalPageCollection := range manual.Pages {
 		fixedPagedCollection := make([]int, len(originalPageCollection))
 		copy(fixedPagedCollection, originalPageCollection)
 
@@ -213,6 +215,7 @@ func FixManual(manual Manual) int {
 			if isValidFixedPageCollection {
 				// Breaks out of the loop if the page is valid
 				isValidPageCollection = true
+				invalidPages[index] = invalidPageIndexes
 				continue
 			}
 
@@ -224,10 +227,14 @@ func FixManual(manual Manual) int {
 		if wasFixed {
 			middleIndex := FindPageCollectionMiddleIndex(fixedPagedCollection)
 			total += fixedPagedCollection[middleIndex]
+			fixedResult[index] = fixedPagedCollection
+			continue
 		}
+
+		fixedResult[index] = originalPageCollection
 	}
 
-	return total
+	return total, fixedResult, invalidPages
 }
 
 func roundUpInt(x, multiple int) int {

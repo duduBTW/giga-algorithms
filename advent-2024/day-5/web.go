@@ -88,7 +88,7 @@ func setup() {
 			newTotal, invalidPageIndexes := ValidateManual(defaultManual)
 			totalState.Set(newTotal)
 			pagesState.Set(PagesProps{
-				Pages:              pagesState.Value.Pages,
+				Pages:              defaultManual.Pages,
 				InvalidPageIndexes: invalidPageIndexes,
 			})
 		},
@@ -98,7 +98,12 @@ func setup() {
 		Selector:  jslayer.Id(IdFixButton),
 		EventType: "click",
 		Listener: func(this js.Value, args []js.Value) {
-			totalState.Set(FixManual(defaultManual))
+			total, fixedPages, invalidPageIndexes := FixManual(defaultManual)
+			totalState.Set(total)
+			pagesState.Set(PagesProps{
+				Pages:              fixedPages,
+				InvalidPageIndexes: invalidPageIndexes,
+			})
 		},
 	}
 }
