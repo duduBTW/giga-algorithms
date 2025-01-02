@@ -14,4 +14,13 @@ var (
 	IdFindButton = id("find-button")
 	IdFixButton  = id("fix-button")
 	IdTotal      = id("total")
+	IdPages      = id("pages")
+)
+
+type PageStatus string
+
+const (
+	PageStatusUnknown PageStatus = "unknown"
+	PageStatusValid   PageStatus = "valid"
+	PageStatusInvalid PageStatus = "invalid"
 )

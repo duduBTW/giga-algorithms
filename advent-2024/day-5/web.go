@@ -21,6 +21,7 @@ func getManual() Manual {
 }
 
 var tabsState controllers.StateProps[TabsProps]
+var pagesState controllers.StateProps[PagesProps]
 var totalState controllers.StateProps[int]
 var tabClickHandler jslayer.EventListener
 var findClickHandler jslayer.EventListener
@@ -40,6 +41,17 @@ func setup() {
 		},
 		OnMounted: func(value TabsProps) {
 			tabClickHandler.Add()
+		},
+	}
+
+	pagesState = controllers.StateProps[PagesProps]{
+		Value: PagesProps{
+			Pages:              defaultManual.Pages,
+			InvalidPageIndexes: make([][]int, len(defaultManual.Pages)),
+		},
+		Target: jslayer.Id(IdPages),
+		RenderComponent: func(props PagesProps) templ.Component {
+			return PagesComponent(props)
 		},
 	}
 
@@ -73,7 +85,12 @@ func setup() {
 		Selector:  jslayer.Id(IdFindButton),
 		EventType: "click",
 		Listener: func(this js.Value, args []js.Value) {
-			totalState.Set(ValidateManual(defaultManual))
+			newTotal, invalidPageIndexes := ValidateManual(defaultManual)
+			totalState.Set(newTotal)
+			pagesState.Set(PagesProps{
+				Pages:              pagesState.Value.Pages,
+				InvalidPageIndexes: invalidPageIndexes,
+			})
 		},
 	}
 

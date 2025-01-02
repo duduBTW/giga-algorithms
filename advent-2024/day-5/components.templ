@@ -24,7 +24,8 @@ templ Component(props ComponentProps) {
 		@Header()
 		<div class="flex-1 flex gap-2 px-4 pb-4 overflow-hidden">
 			@PagesComponent(PagesProps{
-				Pages: props.Manual.Pages,
+				Pages:              props.Manual.Pages,
+				InvalidPageIndexes: make([][]int, len(props.Manual.Pages)),
 			})
 			<div class="flex-[0.9] flex flex-col gap-2">
 				@Controls()
@@ -78,21 +79,83 @@ templ Total(value int) {
 }
 
 type PagesProps struct {
-	Pages [][]int
+	Pages              [][]int
+	InvalidPageIndexes [][]int
+}
+
+func isBetween(num int, bounds []int) bool {
+	// Ensure bounds are in order (min, max)
+	min, max := bounds[0], bounds[1]
+	if min > max {
+		min, max = max, min
+	}
+
+	return num >= min && num <= max
+}
+
+func getPageListClasses(status PageStatus) string {
+	baseClasses := "flex rounded-lg"
+
+	var statusClasses string
+	switch status {
+	case PageStatusUnknown:
+		statusClasses = "bg-white"
+	case PageStatusInvalid:
+		statusClasses = "bg-red-50 text-red-950"
+	case PageStatusValid:
+		statusClasses = "bg-green-50 text-green-950"
+	}
+
+	classes := []string{baseClasses, statusClasses}
+	return strings.Join(classes, " ")
 }
 
 templ PagesComponent(props PagesProps) {
-	<div class="flex-1 bg-gray-50 rounded p-3 overflow-y-auto overflow-x-auto flex flex-col gap-2 items-start scrollbar">
+	<div id={ IdPages } class="flex-1 bg-gray-50 rounded p-3 overflow-y-auto overflow-x-auto flex flex-col gap-2 items-start scrollbar">
 		<h2 class="mb-1 text-secondary text-sm font-medium">Pages</h2>
-		for _, line := range props.Pages {
-			<div class="flex bg-white rounded-lg">
-				for index, page := range line {
-					<div class="size-[44px] flex justify-center items-center rounded-md">{ strconv.Itoa(page) }</div>
-					if len(line) - 1 != index {
-						<div class="w-1 h-full bg-gray-50"></div>
-					}
-				}
+		for index, line := range props.Pages {
+			{{ invalidIndex := props.InvalidPageIndexes[index] }}
+			{{ status := GetPageStatus(invalidIndex) }}
+			@PageLineComponent(PageProps{
+				Status:       status,
+				InvalidIndex: invalidIndex,
+				Line:         line,
+			})
+		}
+	</div>
+}
+
+type PageProps struct {
+	Status       PageStatus
+	InvalidIndex []int
+	Line         []int
+}
+
+func GetPageClasses(currentIndex int, props PageProps) string {
+	classes := "size-[44px] flex justify-center items-center"
+	switch props.Status {
+	case PageStatusValid:
+		if FindPageCollectionMiddleIndex(props.Line) == currentIndex {
+			classes += " bg-green-500 text-white rounded"
+		}
+	case PageStatusInvalid:
+		if isBetween(currentIndex, props.InvalidIndex) {
+			classes += " bg-red-500 text-white rounded"
+		}
+	}
+
+	return classes
+}
+
+templ PageLineComponent(props PageProps) {
+	<div class={ getPageListClasses(props.Status) }>
+		for pageIndex, page := range props.Line {
+			<div class={ GetPageClasses(pageIndex, props) }>
+				{ strconv.Itoa(page) }
 			</div>
+			if len(props.Line)-1 != pageIndex {
+				<div class="w-1 h-full bg-gray-50"></div>
+			}
 		}
 	</div>
 }

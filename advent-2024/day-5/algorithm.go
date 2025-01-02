@@ -163,12 +163,13 @@ func FindPageCollectionMiddleIndex(pageCollection []int) int {
 	return int(math.Ceil(float64(len(pageCollection))/2)) - 1
 }
 
-func ValidateManual(manual Manual) int {
-	// manualValidPages := ManualValidPages{}
+func ValidateManual(manual Manual) (int, [][]int) {
+	invalidPages := make([][]int, len(manual.Pages))
 	total := 0
 
-	for _, pageCollection := range manual.Pages {
-		isValidPage, _ := IsValidPageCollection(manual, pageCollection)
+	for index, pageCollection := range manual.Pages {
+		isValidPage, invalidPageIndexes := IsValidPageCollection(manual, pageCollection)
+		invalidPages[index] = invalidPageIndexes
 		if !isValidPage {
 			continue
 		}
@@ -177,7 +178,7 @@ func ValidateManual(manual Manual) int {
 		total += pageCollection[middleIndex]
 	}
 
-	return total
+	return total, invalidPages
 }
 
 func fixPageCollection(pageCollection, invalidPageIndexes []int) []int {
@@ -234,4 +235,18 @@ func roundUpInt(x, multiple int) int {
 		return x
 	}
 	return int(math.Ceil(float64(x)/float64(multiple)) * float64(multiple))
+}
+
+func GetPageStatus(invalidPageIndexes []int) PageStatus {
+	if len(invalidPageIndexes) == 0 {
+		return PageStatusUnknown
+	}
+
+	for _, invalidIndex := range invalidPageIndexes {
+		if invalidIndex != -1 {
+			return PageStatusInvalid
+		}
+	}
+
+	return PageStatusValid
 }
